@@ -4,28 +4,11 @@ using System.Collections;
 
 namespace Uno
 {
-    public enum Value
-    {
-        one = 1,
-        two = 2,
-        three = 3,
-        four = 4,
-        five = 5,
-        six = 6,
-        seven = 7,
-        eight = 8,
-        nine = 9,
-        plus2 = 10,
-        rev = 11,
-        skip = 12,
-        wild = 13,
-        wild4 = 14
-    }
-
+    
     public class Player
     {
-        private List<Card> hand;
-        private string ID;
+        public List<Card> hand;
+        public string ID;
 
         public Player(string pid)
         {
@@ -38,15 +21,23 @@ namespace Uno
             hand.Add(c);
         }
 
-        public Card Play(Card top)
+        public static bool LegalMove(Card top, Card next)
         {
-            System.Console.WriteLine(this);
+            if(next.GetValue() == top.GetValue() || next.GetColor()==top.GetColor() || next.GetColor() == "WILD")
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public virtual Card Play(Card top)
+        {
             Card temp = this.hand[0];
             bool found = false;
             int remv = 0;
             foreach(Card c in this.hand)
             {
-                if(c.GetValue() == top.GetValue() || c.GetColor()==top.GetColor() || c.GetColor() == "WILD")
+                if(LegalMove(top, c))
                 {
                     temp = c;
                     found = true;
@@ -60,11 +51,6 @@ namespace Uno
             }
 
             this.hand.RemoveAt(remv);
-            System.Console.WriteLine(String.Format("{0} played {1}", this.ID, temp));
-            if(this.hand.Count==1)
-            {
-                System.Console.WriteLine("UNO");
-            }
             return temp;
         }
     
@@ -80,14 +66,34 @@ namespace Uno
         public override string ToString()
         {
             string s = "";
+            int i = 1;
             foreach(Card c in this.hand)
             {
-                s += c.ToString() + ", ";
+                s += i.ToString() + ". " + c.ToString() + ", ";
+                i++;
             }
             return s;
         }
     }
 
+    public class UserPlayer : Player
+    {
+        public UserPlayer(string pid) : base(pid){}
+
+        public override Card Play(Card top)
+        {
+            System.Console.WriteLine(this);
+            string input = System.Console.ReadLine();
+            if(LegalMove(top, this.hand[Int32.Parse(input)-1]))
+            {
+                Card temp = this.hand[Int32.Parse(input)-1];
+                this.hand.RemoveAt(Int32.Parse(input)-1);
+                return temp;
+            }
+            return new Card(-1, "FAIL");
+        }
+    }
+    
     public class Deck
     {
         private List<Card> deck;
@@ -107,12 +113,12 @@ namespace Uno
                 }
                 for(int i=0; i<2; i++)
                 {
-                    this.pile.Add(new Card((int)Value.rev, color));
-                    this.pile.Add(new Card((int)Value.skip, color));
-                    this.pile.Add(new Card((int)Value.plus2, color));
+                    this.pile.Add(new Card(11, color));
+                    this.pile.Add(new Card(12, color));
+                    this.pile.Add(new Card(10, color));
                 }
-                this.pile.Add(new Card((int)Value.wild, "WILD"));
-                this.pile.Add(new Card((int)Value.wild4, "WILD"));
+                this.pile.Add(new Card(13, "WILD"));
+                this.pile.Add(new Card(14, "WILD"));
             }
             this.Shuffle();
         }
@@ -166,11 +172,12 @@ namespace Uno
 
     public class Card
     {
-        private int value;
+        private string[] values = {"Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Plus2", "Reverse", "Skip", "Wild", "Wild+4"};
+        private string value;
         private string color;
         public Card(int val, string col)
         {
-            this.value = val;
+            this.value = val > -1 ? values[val] : "FAIL";
             this.color = col;
         }
 
@@ -179,7 +186,7 @@ namespace Uno
             this.color = c;
         }
 
-        public int GetValue()
+        public string GetValue()
         {
             return this.value;
         }
@@ -191,7 +198,7 @@ namespace Uno
 
         public override string ToString()
         {
-            return this.value.ToString() + " " + this.color;
+            return this.value + " " + this.color;
         }
     }
 }

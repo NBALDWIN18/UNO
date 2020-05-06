@@ -7,20 +7,20 @@ class Program
     static void Main(string[]args)
     {
         List<Player> players = new List<Player>();
-        players.Add(new Player("Nolan"));
+        players.Add(new UserPlayer("Nolan"));
         players.Add(new Player("Bot"));
         Deck deck = new Uno.Deck();
         deck.Deal(players);
         Card top = deck.Draw();
         Card temp;
         Card wild_color = new Card(0, "WILD");
-        System.Console.WriteLine(String.Format("The first card is {0}",top));
 
         bool winner = false;
         int index = 0;
         while(!winner)
         {
-            if(top.GetValue()==13)
+            System.Console.WriteLine("Top: {0}",top);
+            if(top.GetValue()=="Wild")
             {
                 temp = players[index].Play(wild_color);
             }
@@ -28,32 +28,30 @@ class Program
             {
                 temp = players[index].Play(top);
             }
-            if(temp.GetValue()==-1)
+            if(temp.GetValue()=="FAIL")
             {
+                System.Console.WriteLine("{0} draws a card",players[index].ID);
                 players[index].AddCard(deck.Draw());
-                System.Console.WriteLine("FAIL");
                 continue;
             }
             top = temp;
             winner = players[index].CheckWin();
             deck.AddToPile(top);
 
-            if(top.GetValue()==11)
+            if(top.GetValue()=="Reverse")
             {
                 players.Reverse();
-                System.Console.WriteLine("Reverse!");
             }
-            if(top.GetValue()==12)
+            if(top.GetValue()=="Skip")
             {
                 index++;
-                System.Console.WriteLine("Skip!");
             }
-            if(top.GetValue()==13)
+            if(top.GetValue()=="Wild")
             {
                 wild_color.SetColor("RED");
                 System.Console.WriteLine("Wild: {0}!", "RED");
             }
-            if(top.GetValue()==14)
+            if(top.GetValue()=="Wild+4")
             {
                 wild_color.SetColor("RED");
                 System.Console.WriteLine("Wild+4: {0}!", "RED");
